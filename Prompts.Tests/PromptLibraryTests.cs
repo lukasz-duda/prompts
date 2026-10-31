@@ -1,12 +1,15 @@
+using Microsoft.Extensions.AI;
+
 namespace Prompts.Tests;
 
 public class PromptLibraryTests
 {
-    private readonly PromptLibrary _sut = new();
-
     [Fact]
-    public void CanUsePromptLibrary()
+    public async Task CanUsePromptLibrary()
     {
-        _sut.Execute();
+        IChatClient chatClient = ChatClientFactory.CreateChatClient();
+        var sut = new PromptLibrary(chatClient);
+        string response = await sut.SayHello();
+        Assert.NotEmpty(response);
     }
 }
