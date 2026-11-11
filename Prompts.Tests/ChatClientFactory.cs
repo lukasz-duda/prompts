@@ -7,7 +7,17 @@ public static class ChatClientFactory
 {
     public static IChatClient CreateChatClient()
     {
-        return ((IChatClient)new OllamaApiClient("http://localhost:11434", "llama3.2:3b"))
+        var httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:11435"),
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+
+        var client = new OllamaApiClient(httpClient, "qwen3.5:4b");
+
+        IChatClient chatClient = client;
+
+        return chatClient
             .AsBuilder()
             .UseFunctionInvocation()
             .Build();

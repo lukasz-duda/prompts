@@ -28,43 +28,38 @@ public class PromptLibrary(IChatClient chatClient)
         return response.Text;
     }
 
-    public async Task<Step[]> CreatePlan(string taskDescription, CancellationToken cancellationToken = default)
+    public async Task<Plan?> CreatePlan(string taskDescription, CancellationToken cancellationToken = default)
     {
-        ChatMessage systemPrompt = new(ChatRole.System, @"Zaplanuj kroki potrzebne, żeby odpowiedzieć na pytanie użytkownika.
-Możliwe kroki:
-- get_avg_weight <cat_species_name> - Zapytanie o średnią wagę podanego gatunku kota.
-- sum - Zapytanie o sumę wyników poprzednich zapytań.
+        ChatMessage systemPrompt = new(ChatRole.System, @"Plan the first steps to start with to resolve the user's problem. The actions will be executed and we will continue in next iteration.
 
-Odpowiedź zwróć jako listę nazw kroków i parametrów rozdzielonych przecinkami np.:
+Available actions and required arguments:
+- get_avg_weight(species): Request for an average weight for a given cat species.
+- divide(numerator, denominator): Divide two values.
+- multiply(factor_a, factor_b): Multiply two values.
+- sum(value_a, value_b): Add values together.
 
-```
-get_avg_weight,Siamese cat,get_avg_weight,European cat,sum
-```
+Return the response in valid JSON format only, using this exact structure:
 
-Nie zwracaj żadnych dodatkowych informacji, tylko listę kroków.");
+{
+  ""actions"": [
+    {
+      ""name"": ""get_avg_weight"",
+      ""comment"": ""Get average weight of Siamese cat""
+    },
+    { 
+      ""name"": ""divide"", 
+      ""comment"": ""Divide maximum load by Siamese cat weight"" 
+    }
+  ]
+}");
         ChatMessage userMessage = new(ChatRole.User, taskDescription);
-        ChatResponse response = await chatClient.GetResponseAsync(
+        ChatResponse<Plan> response = await chatClient.GetResponseAsync<Plan>(
             [systemPrompt, userMessage],
             cancellationToken: cancellationToken);
-        return ParseSteps(response.Text);
-    }
-
-    private Step[] ParseSteps(string text)
-    {
-        List<Step> steps = [];
-        string[] parts = text.Split(',');
-        for (int i = 0; i < parts.Length; i++)
-        {
-            parts[i] = parts[i].Trim();
-            if (parts[i].StartsWith("get_avg_weight", StringComparison.OrdinalIgnoreCase))
-            {
-                steps.Add(new Step("get_avg_weight", parts[i + 1].Trim()));
-            }
-            else if (parts[i].Equals("sum", StringComparison.OrdinalIgnoreCase))
-            {
-                steps.Add(new Step("sum"));
-            }
-        }
-        return steps.ToArray();
+        return response.Result;
     }
 }
+
+public record Plan(Action[] Actions);
+
+public record Action(string Name, string Comment);

@@ -31,14 +31,14 @@ public class PromptLibraryTests
         Assert.Contains(expectedAverageWeight, response, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "The response from the model doesn't match the expected format, so this test is skipped for now.")]
+    [Fact]
     public async Task ReturnsPlannedSteps()
     {
-        Step[] steps = await _sut.CreatePlan("I have 3 leopards and 5 European cats. How many of them can fit in a vehicle with a 100 kg payload capacity?");
-        Assert.NotEmpty(steps);
-        Step firstStep = steps[0];
-        Assert.NotEmpty(firstStep.Name);
-        Assert.NotNull(firstStep.Parameter);
-        Assert.NotEmpty(firstStep.Parameter);
+        Plan? plan = await _sut.CreatePlan("I have 3 leopards and 5 European cats. How many of them can fit in a vehicle with a 100 kg payload capacity?");
+        Assert.NotNull(plan);
+        Assert.NotEmpty(plan.Actions);
+        var firstAction = plan.Actions[0];
+        Assert.NotEmpty(firstAction.Name);
+        Assert.NotEmpty(firstAction.Comment);
     }
 }

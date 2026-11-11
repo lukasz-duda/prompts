@@ -9,3 +9,19 @@ services:
       - ./ollama:/root/.ollama
     ports:
       - 11434:11434
+
+  proxy:
+    container_name: ollama-proxy
+    image: mitmproxy/mitmproxy
+    entrypoint: ["mitmdump"]
+    command:
+      - --mode
+      - reverse:http://172.21.144.1:11434
+      - --listen-host
+      - 0.0.0.0
+      - --listen-port
+      - "8080"
+      - --flow-detail
+      - "4"
+    ports:
+      - 127.0.0.1:11435:8080

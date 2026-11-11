@@ -16,7 +16,7 @@ docker compose up -d
 Pull model:
 
 ```bash
-docker exec -it ollama ollama pull llama3.2:3b
+docker exec -it ollama ollama pull qwen3.5:4b
 ```
 
 Test:
